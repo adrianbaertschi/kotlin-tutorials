@@ -7,21 +7,22 @@ fun main() {
 const val OPEN = -1
 const val BONUS = -2
 
-data class Frame(var firstThrow: Int, var secondThrow: Int, var bonusPoints: Int = 0)
+data class Frame(var firstThrow: Int, var secondThrow: Int, var bonusPoints: Int = 0) {
+    fun strike(): Boolean {
+        return firstThrow == 10
+    }
+
+    fun spare(): Boolean {
+        return firstThrow + secondThrow == 10 && bonusPoints == BONUS
+    }
+
+    fun total() = firstThrow + secondThrow + bonusPoints
+
+
+}
 
 class Game {
     private val frames = mutableMapOf<Int, Frame>()
-
-
-    fun score(): Int {
-        val sum = frames.values.map { frame -> frame.firstThrow + frame.secondThrow + frame.bonusPoints }
-            .sum()
-
-        frames.forEach { (round, frame) -> println("$round: $frame") }
-        println("Sum: $sum")
-
-        return sum
-    }
 
     fun roll(pins: Int) {
         var round = frames.values.indexOfFirst { e -> e.firstThrow == -1 || e.secondThrow == -1 }
@@ -38,35 +39,43 @@ class Game {
         }
 
         // current throw
-        val currentFrame = frames.getOrElse(round) { Frame(OPEN, OPEN) }
-        if (currentFrame.firstThrow == OPEN) {
-            if (pins == 10) { // strike
-                frames[round] = Frame(pins, BONUS, BONUS)
-            } else {
-                frames[round] = Frame(pins, OPEN)
-            }
-        } else if (currentFrame.secondThrow == OPEN) {
-            if (currentFrame.firstThrow + pins == 10) { // spare
+        val frame = frames.getOrElse(round) { Frame(OPEN, OPEN) }
+        if (frame.firstThrow == OPEN) {
+            val strike = pins == 10
+            frames[round] = if (strike) Frame(pins, BONUS, BONUS) else Frame(pins, OPEN)
+        } else if (frame.secondThrow == OPEN) {
+            frames[round]?.secondThrow = pins
+            val spare = frame.firstThrow + pins == 10
+            if (spare) {
                 frames[round]?.bonusPoints = BONUS
             }
-            frames[round]?.secondThrow = pins
         }
     }
 
     private fun addBonusPoints(pins: Int, frame: Frame?) {
         frame?.apply {
-            if (firstThrow == 10) {
+            if (strike()) {
                 if (secondThrow == BONUS) {
                     secondThrow = pins
                 } else if (bonusPoints == BONUS) {
                     bonusPoints = pins
                 }
-            } else if (firstThrow + secondThrow == 10) {
-                if (bonusPoints == BONUS) {
-                    bonusPoints = pins
-                }
+            } else if (spare()) {
+                bonusPoints = pins
             }
         }
     }
+
+    fun score(): Int {
+        val sum = frames.values
+            .map(Frame::total)
+            .sum()
+
+        frames.forEach { (round, frame) -> println("$round: $frame") }
+        println("Sum: $sum")
+
+        return sum
+    }
+
 }
 
