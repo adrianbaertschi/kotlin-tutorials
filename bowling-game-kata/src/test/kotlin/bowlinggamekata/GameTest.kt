@@ -37,4 +37,12 @@ class GameTest {
         assertEquals(40, game.score()) // 40 = 10 * (2 + 2)
     }
 
+    @Test
+    fun allRolls_allStrikes() {
+        repeat(10) { game.roll(10) }
+        game.roll(10) // bonus for last frame
+        game.roll(10) //
+        assertEquals(300, game.score()) // 300 = 10 * (10 + 10 + 10)
+    }
+
 }
