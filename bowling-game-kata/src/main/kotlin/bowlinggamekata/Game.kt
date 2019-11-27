@@ -28,28 +28,11 @@ class Game {
             round = frames.size;
         }
 
-        // add bonus points to prev
-        val prevFrame = frames[round - 1]
-        if (prevFrame != null) {
-            if (prevFrame.first == 10) {
-                if (prevFrame.second == -2) {
-                    frames[round - 1] = prevFrame.copy(second = pins)
-                }
-            }
-        }
-
-        // add bonus points to prev-1
-        val prePrevFrame = frames[round - 2]
-        if (prePrevFrame != null) {
-            if (prePrevFrame.first == 10) {
-                if (prePrevFrame.third == -2) {
-                    frames[round - 2] = prePrevFrame.copy(third = pins)
-                }
-            }
-        }
+        // add bonus points
+        addBonusPoints(frames, round - 1, pins)
+        addBonusPoints(frames, round - 2, pins)
 
         if (round > 9) {
-            frames[9] = frames[9]!!.copy(third = pins)
             return
         }
 
@@ -69,5 +52,22 @@ class Game {
         }
     }
 
+    private fun addBonusPoints(
+        frames: MutableMap<Int, Triple<Int, Int, Int>>,
+        round: Int,
+        pins: Int
+    ) {
+        val frame = frames[round]
+        frame?.apply {
+            if (first == 10) {
+                if (second == -2) {
+                    frames[round] = frame.copy(second = pins)
+                }
+                if (third == -2) {
+                    frames[round] = frame.copy(third = pins)
+                }
+            }
+        }
+    }
 }
 
