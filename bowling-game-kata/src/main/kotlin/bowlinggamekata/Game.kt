@@ -26,12 +26,12 @@ class Game {
     fun roll(pins: Int) {
         var round = frames.values.indexOfFirst { e -> e.firstThrow == -1 || e.secondThrow == -1 }
         if (round == -1) {
-            round = frames.size;
+            round = frames.size
         }
 
         // add bonus points
-        addBonusPoints(frames, round - 1, pins)
-        addBonusPoints(frames, round - 2, pins)
+        addBonusPoints(pins, frames[round - 1])
+        addBonusPoints(pins, frames[round - 2])
 
         if (round > 9) {
             return
@@ -40,29 +40,30 @@ class Game {
         // current throw
         val currentFrame = frames.getOrElse(round) { Frame(OPEN, OPEN) }
         if (currentFrame.firstThrow == OPEN) {
-            if (pins == 10) {
+            if (pins == 10) { // strike
                 frames[round] = Frame(pins, BONUS, BONUS)
             } else {
                 frames[round] = Frame(pins, OPEN)
             }
         } else if (currentFrame.secondThrow == OPEN) {
+            if (currentFrame.firstThrow + pins == 10) { // spare
+                frames[round]?.bonusPoints = BONUS
+            }
             frames[round]?.secondThrow = pins
         }
     }
 
-    private fun addBonusPoints(
-        frames: MutableMap<Int, Frame>,
-        round: Int,
-        pins: Int
-    ) {
-        val frame = frames[round]
+    private fun addBonusPoints(pins: Int, frame: Frame?) {
         frame?.apply {
             if (firstThrow == 10) {
                 if (secondThrow == BONUS) {
                     secondThrow = pins
+                } else if (bonusPoints == BONUS) {
+                    bonusPoints = pins
                 }
+            } else if (firstThrow + secondThrow == 10) {
                 if (bonusPoints == BONUS) {
-                    bonusPoints = pins;
+                    bonusPoints = pins
                 }
             }
         }
