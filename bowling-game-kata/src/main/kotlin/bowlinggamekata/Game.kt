@@ -6,19 +6,12 @@ fun main() {
 
 const val OPEN = -1
 const val BONUS = -2
+val NEW_FRAME = Frame(OPEN, OPEN)
 
 data class Frame(var firstThrow: Int, var secondThrow: Int, var bonusPoints: Int = 0) {
-    fun strike(): Boolean {
-        return firstThrow == 10
-    }
-
-    fun spare(): Boolean {
-        return firstThrow + secondThrow == 10 && bonusPoints == BONUS
-    }
-
+    fun strike() = firstThrow == 10
+    fun spare() = firstThrow + secondThrow == 10 && bonusPoints == BONUS
     fun total() = firstThrow + secondThrow + bonusPoints
-
-
 }
 
 class Game {
@@ -38,8 +31,7 @@ class Game {
             return
         }
 
-        // current throw
-        val frame = frames.getOrElse(round) { Frame(OPEN, OPEN) }
+        val frame = frames.getOrElse(round) { NEW_FRAME }
         if (frame.firstThrow == OPEN) {
             val strike = pins == 10
             frames[round] = if (strike) Frame(pins, BONUS, BONUS) else Frame(pins, OPEN)
