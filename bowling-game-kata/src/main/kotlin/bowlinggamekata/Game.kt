@@ -1,29 +1,30 @@
 package bowlinggamekata
 
-fun main(args: Array<String>) {
+fun main() {
     println("Hello, World")
 }
 
-class Game {
+const val OPEN = -1
+const val BONUS = -2
 
-    private val frames = mutableMapOf<Int, Triple<Int, Int, Int>>()
+data class Frame(var firstThrow: Int, var secondThrow: Int, var bonusPoints: Int = 0)
+
+class Game {
+    private val frames = mutableMapOf<Int, Frame>()
 
 
     fun score(): Int {
-        println(frames)
-        return frames.values.map { p -> filterSpecial(p.first) + filterSpecial(p.second) + filterSpecial(p.third) }
+        val sum = frames.values.map { frame -> frame.firstThrow + frame.secondThrow + frame.bonusPoints }
             .sum()
-    }
 
-    private fun filterSpecial(points: Int): Int {
-        if (points >= 0) {
-            return points;
-        }
-        return 0
+        frames.forEach { (round, frame) -> println("$round: $frame") }
+        println("Sum: $sum")
+
+        return sum
     }
 
     fun roll(pins: Int) {
-        var round = frames.values.indexOfFirst { e -> e.first == -1 || e.second == -1 }
+        var round = frames.values.indexOfFirst { e -> e.firstThrow == -1 || e.secondThrow == -1 }
         if (round == -1) {
             round = frames.size;
         }
@@ -37,34 +38,31 @@ class Game {
         }
 
         // current throw
-        val currentFrame = frames.getOrElse(round) { Triple(-1, -1, 0) }
-        if (currentFrame.first == -1) {
+        val currentFrame = frames.getOrElse(round) { Frame(OPEN, OPEN) }
+        if (currentFrame.firstThrow == OPEN) {
             if (pins == 10) {
-                frames[round] = Triple(pins, -2, -2)
+                frames[round] = Frame(pins, BONUS, BONUS)
             } else {
-                frames[round] = Triple(pins, -1, 0)
+                frames[round] = Frame(pins, OPEN)
             }
-            return
-        }
-        if (currentFrame.second == -1) {
-            val frameCopy = currentFrame.copy(second = pins)
-            frames[round] = frameCopy
+        } else if (currentFrame.secondThrow == OPEN) {
+            frames[round]?.secondThrow = pins
         }
     }
 
     private fun addBonusPoints(
-        frames: MutableMap<Int, Triple<Int, Int, Int>>,
+        frames: MutableMap<Int, Frame>,
         round: Int,
         pins: Int
     ) {
         val frame = frames[round]
         frame?.apply {
-            if (first == 10) {
-                if (second == -2) {
-                    frames[round] = frame.copy(second = pins)
+            if (firstThrow == 10) {
+                if (secondThrow == BONUS) {
+                    secondThrow = pins
                 }
-                if (third == -2) {
-                    frames[round] = frame.copy(third = pins)
+                if (bonusPoints == BONUS) {
+                    bonusPoints = pins;
                 }
             }
         }
