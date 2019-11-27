@@ -5,12 +5,15 @@ fun main(args: Array<String>) {
 }
 
 class Game {
+
+    private var score = 0
+
     fun score(): Int {
-        return 0
+        return score
     }
 
     fun roll(pins: Int) {
-
+        score += pins
     }
 }
 
